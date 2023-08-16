@@ -8,10 +8,7 @@
 import sys
 
 f_in_path = './'
-f1_in_name = 'L09-W0096.xml'
-f2_in_name = 'K09-W0096.xml'
-# f3_in_name = 'L09-W0096.xml'
-# f4_in_name = 'K09-W0096.xml'
+file_names = ['L09-W0096.xml', 'K09-W0096.xml'] 
 
 f_out_path = f_in_path
 f_out_name = 'K09-W0096-2.xml'
@@ -56,11 +53,29 @@ f_out.write(layout_settings)
 #1st is file_1 alias f1_name etc
 #-----------------------------------
 
+def check_string_in_file(file_path, search_string):
+    try:
+        with open(file_path, 'r') as file:
+            contents = file.read()
+            if search_string in contents:
+                return True
+            else:
+                return False
+    except FileNotFoundError:
+        print("File not found.")
+        return False
+
 def extract_indiv_det_settings(file_in_path,file_in_name, file_out):
     file_in = open(file_in_path + file_in_name, "r")
 
     indiv_settings = "\n"
     do_load_indiv_settings = False
+
+    include_e_cliba = check_string_in_file(file_in_path + file_in_name, "/calibt")
+
+    final_string = "</MinThreshold>"
+    if include_e_cliba:
+        final_string = "</calibt>" 
 
     for line in file_in:
         if do_load_indiv_settings:
@@ -70,7 +85,7 @@ def extract_indiv_det_settings(file_in_path,file_in_name, file_out):
             do_load_indiv_settings = True
 
         # there can be either min thrl or calibt based on the fact whether there is e calib or no
-        if "</calibt>" in line:
+        if final_string in line:
             do_load_indiv_settings = False
     
     detector_name = indiv_settings[indiv_settings.find('<')+1:indiv_settings.find('>')]
@@ -80,10 +95,9 @@ def extract_indiv_det_settings(file_in_path,file_in_name, file_out):
     file_in.close()
     file_out.write(indiv_settings)
 
-extract_indiv_det_settings(f_in_path, f1_in_name, f_out)
-extract_indiv_det_settings(f_in_path, f2_in_name, f_out)
-# extract_indiv_det_settings(f_in_path, f3_in_name, f_out)
-# extract_indiv_det_settings(f_in_path, f4_in_name, f_out)
+for file_name in file_names:
+    extract_indiv_det_settings(f_in_path, file_name, f_out)
+
 
 #-----------------------------------
 #PARAMETRS AND INFO
